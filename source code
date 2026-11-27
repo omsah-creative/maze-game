@@ -1,0 +1,71 @@
+from collections import deque
+
+MAZE = [
+    ['P', '.', '.', '#', '#'],
+    ['#', '#', '.', '#', '#'],
+    ['.', '.', '.', '#', '#'],
+    ['#', '.', '#', '#', '#'],
+    ['#', '.', '.', '.', 'E'],
+]
+DIRS = {'W': (-1, 0), 'A': (0, -1), 'S': (1, 0), 'D': (0, 1)}
+ROWS, COLS = len(MAZE), len(MAZE[0])
+player, moves = (0, 0), 0
+
+
+def show_maze():
+    print("\nMAZE:")
+    for r in range(ROWS):
+        print(" ".join("P" if (r, c) == player else MAZE[r][c] for c in range(COLS)))
+    print()
+
+
+def move(key):
+    global player, moves
+    if (key := key.upper()) not in DIRS:
+        return print("Invalid key! Use W, A, S, or D.")
+    nr, nc = player[0] + DIRS[key][0], player[1] + DIRS[key][1]
+    if not (0 <= nr < ROWS and 0 <= nc < COLS) or MAZE[nr][nc] == '#':
+        return print("Blocked! Player stays at", player)
+    player, moves = (nr, nc), moves + 1
+    print(f"Moved to {player} | Moves: {moves}")
+    show_maze()
+    if MAZE[nr][nc] == 'E':
+        print(f"You escaped in {moves} moves!")
+
+
+def shortest_path():
+    q, visited = deque([((0, 0), 0)]), {(0, 0)}
+    while q:
+        (r, c), dist = q.popleft()
+        if (r, c) == (4, 4):
+            print("Shortest path:", dist, "steps")
+            return dist
+        for dr, dc in DIRS.values():
+            nxt = (r + dr, c + dc)
+            if 0 <= nxt[0] < ROWS and 0 <= nxt[1] < COLS and MAZE[nxt[0]][nxt[1]] != '#' and nxt not in visited:
+                visited.add(nxt)
+                q.append((nxt, dist + 1))
+    print("No path found.")
+    return -1
+
+
+def main():
+    global player, moves
+    while True:
+        choice = input("\n1. Play Game\n2. Find Shortest Path\n3. Exit\nChoice: ").strip()
+        if choice == '1':
+            player, moves = (0, 0), 0
+            show_maze()
+            while MAZE[player[0]][player[1]] != 'E':
+                move(input("Move (W/A/S/D): "))
+        elif choice == '2':
+            shortest_path()
+        elif choice == '3':
+            print("Bye!")
+            break
+        else:
+            print("Invalid choice.")
+
+
+if __name__ == "__main__":
+    main()
